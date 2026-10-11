@@ -1,0 +1,71 @@
+package v1
+
+import (
+	"context"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+	errHandler "github.com/vucongthanh92/courier-chat-svc/helper/error_handler"
+	"github.com/vucongthanh92/courier-chat-svc/helper/utils"
+	"github.com/vucongthanh92/courier-chat-svc/internal/api/http/middleware"
+	"github.com/vucongthanh92/courier-chat-svc/internal/api/ws"
+	"github.com/vucongthanh92/courier-chat-svc/internal/domain/interfaces"
+	"github.com/vucongthanh92/courier-chat-svc/internal/domain/models"
+)
+
+type WsHandler struct {
+	hub         *ws.Hub
+	upgrader    websocket.Upgrader
+	tokenDeny   interfaces.TokenDenylistI
+	keyResolver func(context.Context, string) (interface{}, *errHandler.ErrorBuilder)
+}
+
+func InitWsHandler(
+	hub *ws.Hub,
+	allowOrigins []string,
+	tokenDeny interfaces.TokenDenylistI,
+	keyResolver func(context.Context, string) (interface{}, *errHandler.ErrorBuilder),
+) *WsHandler {
+	return &WsHandler{
+		hub:         hub,
+		upgrader:    ws.Upgrader(allowOrigins),
+		tokenDeny:   tokenDeny,
+		keyResolver: keyResolver,
+	}
+}
+
+func (h *WsHandler) VerifyAndConnect(c *gin.Context) {
+	token := c.Query("access_token")
+	if token == "" {
+		token = c.Query("token")
+	}
+	if token == "" {
+		errHandler.InitErrorBuilder(c).
+			SetStatus(http.StatusUnauthorized).
+			SetError(models.ErrorDTO{Code: "token_missing", Message: "access_token query parameter missing"}).
+			ExposeHttpError(c)
+		return
+	}
+
+	claims, authErr := middleware.VerifyToken(c.Request.Context(), token, h.tokenDeny, h.keyResolver)
+	if authErr != nil {
+		authErr.ExposeHttpError(c)
+		return
+	}
+
+	userID := utils.ParseUserID(claims["sub"])
+	if userID == 0 {
+		errHandler.InitErrorBuilder(c).
+			SetStatus(http.StatusUnauthorized).
+			SetError(models.ErrorDTO{Code: "unauthorized", Message: "missing authenticated user"}).
+			ExposeHttpError(c)
+		return
+	}
+
+	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		return
+	}
+	h.hub.Register(userID, conn)
+}
