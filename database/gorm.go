@@ -4,20 +4,20 @@ import (
 	"context"
 	"time"
 
-	"github.com/vucongthanh92/courier-chat-svc/config"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
 	_ "github.com/go-sql-driver/mysql"
-	baseDatabase "github.com/vucongthanh92/go-base-utils/database"
+	"github.com/vucongthanh92/go-base-utils/database"
 	"github.com/vucongthanh92/go-base-utils/logger"
+	"github.com/vucongthanh92/go-base-utils/models"
 )
 
 type GormReadDb *gorm.DB
 type GormWriteDb *gorm.DB
 
-func GetConnectByGorm(cfg *config.DatabaseConfig) (GormReadDb, GormWriteDb) {
-	readConn, err := baseDatabase.GormConnectDB(cfg.ReadDbCfg.DbType, cfg.ReadDbCfg.ConnectionString)
+func GetConnectByGorm(cfg *models.DatabaseConfig) (GormReadDb, GormWriteDb) {
+	readConn, err := database.GormConnectDB(cfg.ReadDbCfg.DbType, cfg.ReadDbCfg.ConnectionString)
 	if err != nil {
 		logger.Error("connect error", zap.Error(err))
 		return nil, nil
@@ -37,7 +37,7 @@ func GetConnectByGorm(cfg *config.DatabaseConfig) (GormReadDb, GormWriteDb) {
 	readDb.SetMaxOpenConns(cfg.ReadDbCfg.MaxOpenConns)
 	readDb.SetConnMaxLifetime(time.Duration(cfg.ReadDbCfg.ConnMaxLifetime) * time.Minute)
 
-	writeConn, err := baseDatabase.GormConnectDB(cfg.WriteDbCfg.DbType, cfg.WriteDbCfg.ConnectionString)
+	writeConn, err := database.GormConnectDB(cfg.WriteDbCfg.DbType, cfg.WriteDbCfg.ConnectionString)
 	if err != nil {
 		logger.Error("connect error", zap.Error(err))
 		return nil, nil

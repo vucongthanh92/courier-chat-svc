@@ -7,9 +7,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/vucongthanh92/courier-chat-svc/config"
 	"github.com/vucongthanh92/go-base-utils/logger"
 	"go.uber.org/zap/zapcore"
+
+	"github.com/vucongthanh92/go-base-utils/models"
 )
 
 type Client interface {
@@ -38,13 +39,13 @@ type LogRecord struct {
 }
 
 type clientImpl struct {
-	cfg   *config.LokiConfig
+	cfg   *models.LokiConfig
 	log   logger.Logger
 	queue chan LogRecord
 	httpc *http.Client
 }
 
-func InitLokiClient(cfg *config.LokiConfig, log logger.Logger) Client {
+func InitLokiClient(cfg *models.LokiConfig, log logger.Logger) Client {
 	if cfg == nil || cfg.URL == "" {
 		log.Warn("loki client disabled: missing config")
 		return &noop{}
