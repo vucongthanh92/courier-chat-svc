@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	errHandler "github.com/vucongthanh92/courier-chat-svc/helper/error_handler"
+	errHandler "github.com/vucongthanh92/go-base-utils/helper/http_error"
 )
 
 type JWTSignerI interface {

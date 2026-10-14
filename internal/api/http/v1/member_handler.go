@@ -7,11 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/vucongthanh92/courier-chat-svc/helper/constants"
-	errHandler "github.com/vucongthanh92/courier-chat-svc/helper/error_handler"
-	httpcommon "github.com/vucongthanh92/courier-chat-svc/helper/http_common"
-	"github.com/vucongthanh92/courier-chat-svc/helper/utils"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/interfaces"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/models"
+	httpcommon "github.com/vucongthanh92/go-base-utils/helper/http_common"
+	errHandler "github.com/vucongthanh92/go-base-utils/helper/http_error"
+	"github.com/vucongthanh92/go-base-utils/helper/utils"
 )
 
 type MemberHandler struct {

@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/vucongthanh92/courier-chat-svc/config"
-	errorhandler "github.com/vucongthanh92/courier-chat-svc/helper/error_handler"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/models"
 	jwkpb "github.com/vucongthanh92/courier/shared/grpc/user-service/jwk/gen"
 	userprofilepb "github.com/vucongthanh92/courier/shared/grpc/user-service/user_profile/gen"
 	userstatuspb "github.com/vucongthanh92/courier/shared/grpc/user-service/user_status/gen"
+	errorhandler "github.com/vucongthanh92/go-base-utils/helper/http_error"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

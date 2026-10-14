@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/vucongthanh92/courier-chat-svc/config"
-	errHandler "github.com/vucongthanh92/courier-chat-svc/helper/error_handler"
 	middleware "github.com/vucongthanh92/courier-chat-svc/internal/api/http/middleware"
 	v1 "github.com/vucongthanh92/courier-chat-svc/internal/api/http/v1"
 	"github.com/vucongthanh92/courier-chat-svc/internal/api/ws"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/interfaces"
 	cacheRepo "github.com/vucongthanh92/courier-chat-svc/internal/repository/external/redis"
 	user_grpc "github.com/vucongthanh92/courier-chat-svc/internal/repository/external/user_grpc"
-	httpmiddlewares "github.com/vucongthanh92/go-base-utils/http/middlewares"
+	errHandler "github.com/vucongthanh92/go-base-utils/helper/http_error"
+	utilsMidd "github.com/vucongthanh92/go-base-utils/http/middlewares"
 	httpserver "github.com/vucongthanh92/go-base-utils/http/server"
 )
 
@@ -60,12 +60,12 @@ func (s *Server) Run() {
 	}
 
 	httpServer, router := httpserver.NewServer(*serverConfig)
-	router.Use(httpmiddlewares.Cors(s.cfg.Http.AllowOrigins...))
+	router.Use(utilsMidd.CorsV2(s.cfg.Http.AllowOrigins))
 
 	keyResolver := func(ctx context.Context, kid string) (interface{}, *errHandler.ErrorBuilder) {
 		return middleware.ResolvePublicKey(ctx, s.jwkCache, s.userGrpc, kid)
 	}
-	authMW := middleware.JWTMiddleware(s.tokenDeny, keyResolver)
+	authMW := utilsMidd.JWTMiddleware(s.tokenDeny, keyResolver)
 	if s.wsHub != nil {
 		go s.wsHub.Run(context.Background())
 	}

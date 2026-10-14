@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	errHandler "github.com/vucongthanh92/courier-chat-svc/helper/error_handler"
-	"github.com/vucongthanh92/courier-chat-svc/helper/utils"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/interfaces"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/models"
+	errHandler "github.com/vucongthanh92/go-base-utils/helper/http_error"
+	"github.com/vucongthanh92/go-base-utils/helper/utils"
 	"github.com/vucongthanh92/go-base-utils/logger"
 	"go.uber.org/zap"
 )

@@ -6,12 +6,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	errHandler "github.com/vucongthanh92/courier-chat-svc/helper/error_handler"
-	"github.com/vucongthanh92/courier-chat-svc/helper/utils"
-	"github.com/vucongthanh92/courier-chat-svc/internal/api/http/middleware"
 	"github.com/vucongthanh92/courier-chat-svc/internal/api/ws"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/interfaces"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/models"
+	"github.com/vucongthanh92/go-base-utils/helper/utils"
+
+	errHandler "github.com/vucongthanh92/go-base-utils/helper/http_error"
+	utilsMidd "github.com/vucongthanh92/go-base-utils/http/middlewares"
 )
 
 type WsHandler struct {
@@ -35,6 +36,8 @@ func InitWsHandler(
 	}
 }
 
+// VerifyAndConnect verifies the JWT token from the query parameter, checks its validity, expiration, and denylist status.
+// If valid, it upgrades the HTTP connection to a WebSocket connection and registers the user with the hub.
 func (h *WsHandler) VerifyAndConnect(c *gin.Context) {
 	token := c.Query("access_token")
 	if token == "" {
@@ -48,7 +51,7 @@ func (h *WsHandler) VerifyAndConnect(c *gin.Context) {
 		return
 	}
 
-	claims, authErr := middleware.VerifyToken(c.Request.Context(), token, h.tokenDeny, h.keyResolver)
+	claims, authErr := utilsMidd.VerifyToken(c.Request.Context(), token, h.tokenDeny, h.keyResolver)
 	if authErr != nil {
 		authErr.ExposeHttpError(c)
 		return

@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"github.com/vucongthanh92/courier-chat-svc/helper/constants"
-	errHandler "github.com/vucongthanh92/courier-chat-svc/helper/error_handler"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/interfaces"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/models"
 	userGrpc "github.com/vucongthanh92/courier-chat-svc/internal/repository/external/user_grpc"
+	errHandler "github.com/vucongthanh92/go-base-utils/helper/http_error"
 )
 
 type MemberUseCaseImpl struct {

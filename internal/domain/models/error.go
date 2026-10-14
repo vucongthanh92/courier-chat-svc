@@ -1,7 +1,5 @@
 package models
 
-type ErrorDTO struct {
-	Message string `json:"message"`
-	Field   string `json:"field"`
-	Code    string `json:"code"`
-}
+import baseModels "github.com/vucongthanh92/go-base-utils/models"
+
+type ErrorDTO = baseModels.ErrorDTO

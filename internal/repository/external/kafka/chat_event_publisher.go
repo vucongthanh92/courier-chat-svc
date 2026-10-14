@@ -9,9 +9,9 @@ import (
 
 	kafkago "github.com/segmentio/kafka-go"
 	"github.com/vucongthanh92/courier-chat-svc/config"
-	"github.com/vucongthanh92/courier-chat-svc/helper/utils"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/interfaces"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/models"
+	"github.com/vucongthanh92/go-base-utils/helper/utils"
 )
 
 const (

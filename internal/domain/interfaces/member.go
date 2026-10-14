@@ -3,9 +3,9 @@ package interfaces
 import (
 	"context"
 
-	errHandler "github.com/vucongthanh92/courier-chat-svc/helper/error_handler"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/entities"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/models"
+	errHandler "github.com/vucongthanh92/go-base-utils/helper/http_error"
 )
 
 type MemberServiceI interface {

@@ -6,9 +6,9 @@ import (
 	"fmt"
 
 	"github.com/vucongthanh92/courier-chat-svc/helper/constants"
-	errHandler "github.com/vucongthanh92/courier-chat-svc/helper/error_handler"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/interfaces"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/models"
+	errHandler "github.com/vucongthanh92/go-base-utils/helper/http_error"
 )
 
 type UserEventHandler struct {

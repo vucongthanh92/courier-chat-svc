@@ -7,7 +7,6 @@ import (
 	"github.com/google/wire"
 	"github.com/vucongthanh92/courier-chat-svc/config"
 	"github.com/vucongthanh92/courier-chat-svc/database"
-	"github.com/vucongthanh92/courier-chat-svc/helper/transaction"
 	"github.com/vucongthanh92/courier-chat-svc/internal/api"
 	"github.com/vucongthanh92/courier-chat-svc/internal/api/cron"
 	grpc "github.com/vucongthanh92/courier-chat-svc/internal/api/grpc"
@@ -16,6 +15,7 @@ import (
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/interfaces"
 	"github.com/vucongthanh92/courier-chat-svc/internal/worker"
 	"github.com/vucongthanh92/courier-chat-svc/redis"
+	"github.com/vucongthanh92/go-base-utils/helper/transaction"
 
 	kafkaRepo "github.com/vucongthanh92/courier-chat-svc/internal/repository/external/kafka"
 	cacheRepo "github.com/vucongthanh92/courier-chat-svc/internal/repository/external/redis"
@@ -77,7 +77,7 @@ var repoSet = wire.NewSet(
 
 var providerSet = wire.NewSet(
 	user_grpc.NewGrpcClient,
-	transaction.InitManagerTxn,
+	provideTransactionManager,
 	ws.NewHub,
 	worker.InitUserEventConsumer,
 	worker.InitChatEventConsumer,
@@ -105,6 +105,11 @@ func InitializeContainer(
 
 func provideLogger(cfg *config.AppConfig) logger.Logger {
 	return logger.NewZapLogger(cfg.Logger.LogLevel)
+}
+
+func provideTransactionManager(writeDb *database.GormWriteDb) *transaction.ManagerTxn {
+	transactionDb := transaction.GormWriteDb(*writeDb)
+	return transaction.InitManagerTxn(&transactionDb)
 }
 
 func provideMessageUsecase(

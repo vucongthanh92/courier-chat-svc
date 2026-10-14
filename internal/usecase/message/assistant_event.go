@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/vucongthanh92/courier-chat-svc/helper/constants"
-	"github.com/vucongthanh92/courier-chat-svc/helper/utils"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/entities"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/models"
+	"github.com/vucongthanh92/go-base-utils/helper/utils"
 	"github.com/vucongthanh92/go-base-utils/logger"
 	"go.uber.org/zap"
 )

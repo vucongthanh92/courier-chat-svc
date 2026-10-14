@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gammazero/workerpool"
 	"github.com/vucongthanh92/courier-chat-svc/config"
@@ -14,7 +15,9 @@ import (
 	"github.com/vucongthanh92/courier-chat-svc/internal/api"
 	"github.com/vucongthanh92/courier-chat-svc/redis"
 	"github.com/vucongthanh92/go-base-utils/command"
+	baseUtils "github.com/vucongthanh92/go-base-utils/helper/utils"
 	"github.com/vucongthanh92/go-base-utils/logger"
+	"github.com/vucongthanh92/go-base-utils/tracing"
 	"go.uber.org/zap"
 )
 
@@ -31,6 +34,12 @@ func Execute() {
 func start() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
+
+	tracing.UseOpenTelemetry(tracing.Config(*cfg.Tracing))
+	baseUtils.InitSnowflake(baseUtils.SnowflakeConfig{
+		MachineID:   1,
+		CustomEpoch: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+	})
 
 	container, _, _ := registerDependencies(ctx)
 	runServer(ctx, container)
@@ -80,5 +89,6 @@ func runServer(ctx context.Context, container *api.ApiContainer) {
 	if container.AssistantResponseConsumer != nil {
 		_ = container.AssistantResponseConsumer.Close()
 	}
+
 	logger.Info("chat-service stopped")
 }
