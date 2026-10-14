@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"github.com/vucongthanh92/courier-chat-svc/helper/constants"
-	errHandler "github.com/vucongthanh92/courier-chat-svc/helper/error_handler"
+	chatUtils "github.com/vucongthanh92/courier-chat-svc/helper/utils"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/entities"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/interfaces"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/models"
+	errHandler "github.com/vucongthanh92/go-base-utils/helper/http_error"
 )
 
 type messageUseCase struct {
@@ -164,7 +165,7 @@ func (s *messageUseCase) CreateMessage(ctx context.Context, req *models.SendMess
 	// Attempt to create the message in the database. If a unique constraint violation occurs,
 	// check for an existing message with the same client_message_id and return it if found.
 	if createErr := s.messageCommand.CreateMessage(ctx, &newMessageEntity); createErr != nil {
-		if req.ClientMessageID != nil && createErr.IsUniqueViolation() {
+		if req.ClientMessageID != nil && chatUtils.IsUniqueViolation(createErr) {
 			existedMessage, existingErr := s.messageQuery.GetMessageByClientMessageID(ctx, req.ConversationID, *req.ClientMessageID)
 			if existingErr != nil {
 				return nil, false, existingErr

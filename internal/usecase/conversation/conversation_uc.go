@@ -8,13 +8,13 @@ import (
 	"time"
 
 	"github.com/vucongthanh92/courier-chat-svc/helper/constants"
-	errHandler "github.com/vucongthanh92/courier-chat-svc/helper/error_handler"
-	"github.com/vucongthanh92/courier-chat-svc/helper/transaction"
-	"github.com/vucongthanh92/courier-chat-svc/helper/utils"
+	chatUtils "github.com/vucongthanh92/courier-chat-svc/helper/utils"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/entities"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/interfaces"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/models"
 	userGrpc "github.com/vucongthanh92/courier-chat-svc/internal/repository/external/user_grpc"
+	errHandler "github.com/vucongthanh92/go-base-utils/helper/http_error"
+	"github.com/vucongthanh92/go-base-utils/helper/transaction"
 	"github.com/vucongthanh92/go-base-utils/logger"
 	"go.uber.org/zap"
 )
@@ -72,7 +72,7 @@ func (s *ConversationUseCaseImpl) CreateConversation(ctx context.Context, req *m
 	creatorID := req.CreatorID
 
 	memberIDs := append([]uint64{creatorID}, req.MemberIDs()...)
-	sortedMemberIDs, err := utils.NormalizeMemberIDs(memberIDs)
+	sortedMemberIDs, err := chatUtils.NormalizeMemberIDs(memberIDs)
 	if err != nil {
 		return nil, errHandler.InitErrorBuilder(context.Background()).SetStatus(400).
 			SetError(models.ErrorDTO{
@@ -107,7 +107,7 @@ func (s *ConversationUseCaseImpl) CreateConversation(ctx context.Context, req *m
 		})
 	}
 
-	directKey := utils.GenerateConversationDirectKey(sortedMemberIDs)
+	directKey := chatUtils.GenerateConversationDirectKey(sortedMemberIDs)
 	if req.Type == constants.ConversationTypeDirect && directKey == "" {
 		return nil, errHandler.InitErrorBuilder(ctx).SetStatus(400).SetError(models.ErrorDTO{
 			Code:    "invalid_direct_key",
@@ -307,10 +307,10 @@ func (s *ConversationUseCaseImpl) EnsureSystemConversations(ctx context.Context,
 			var memberEntities []entities.ConversationMember
 			if conversationEntity == nil {
 				conversationEntity = &entities.Conversation{}
-				directKey := utils.GenerateSystemConversationDirectKey(req.UserID, name)
+				directKey := chatUtils.GenerateSystemConversationDirectKey(req.UserID, name)
 				conversationEntity.InitConversationEntity(constants.ConversationTypeSystem, &directKey, name, req.UserID)
 				if txnErr := s.conversationCmdRepo.CreateConversation(txCtx, conversationEntity); txnErr != nil {
-					if !txnErr.IsUniqueViolation() {
+					if !chatUtils.IsUniqueViolation(txnErr) {
 						return txnErr
 					}
 					conversationEntity, txnErr = s.conversationReadRepo.GetSystemConversation(txCtx, req.UserID, name)
@@ -322,7 +322,7 @@ func (s *ConversationUseCaseImpl) EnsureSystemConversations(ctx context.Context,
 				var memberEntity entities.ConversationMember
 				memberEntity.InitMemberEntity(conversationEntity.ID, req.UserID, req.UserID)
 				memberEntities = append(memberEntities, memberEntity)
-				if txnErr := s.memberCmdRepo.CreateMembers(txCtx, memberEntities); txnErr != nil && !txnErr.IsUniqueViolation() {
+				if txnErr := s.memberCmdRepo.CreateMembers(txCtx, memberEntities); txnErr != nil && !chatUtils.IsUniqueViolation(txnErr) {
 					return txnErr
 				}
 			}

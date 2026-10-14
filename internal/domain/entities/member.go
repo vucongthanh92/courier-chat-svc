@@ -3,7 +3,7 @@ package entities
 import (
 	"time"
 
-	"github.com/vucongthanh92/courier-chat-svc/helper/utils"
+	"github.com/vucongthanh92/go-base-utils/helper/utils"
 )
 
 type ConversationMember struct {

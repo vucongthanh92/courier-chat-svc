@@ -10,7 +10,6 @@ import (
 	"github.com/google/wire"
 	"github.com/vucongthanh92/courier-chat-svc/config"
 	"github.com/vucongthanh92/courier-chat-svc/database"
-	"github.com/vucongthanh92/courier-chat-svc/helper/transaction"
 	"github.com/vucongthanh92/courier-chat-svc/internal/api"
 	"github.com/vucongthanh92/courier-chat-svc/internal/api/cron"
 	"github.com/vucongthanh92/courier-chat-svc/internal/api/grpc"
@@ -29,6 +28,7 @@ import (
 	message2 "github.com/vucongthanh92/courier-chat-svc/internal/usecase/message"
 	"github.com/vucongthanh92/courier-chat-svc/internal/worker"
 	"github.com/vucongthanh92/courier-chat-svc/redis"
+	"github.com/vucongthanh92/go-base-utils/helper/transaction"
 	"github.com/vucongthanh92/go-base-utils/logger"
 )
 
@@ -40,7 +40,7 @@ func InitializeContainer(appCfg *config.AppConfig, readDb *database.GormReadDb, 
 	memberCmdRepoI := member.InitMemberCommandRepo(readDb, writeDb)
 	memberQueryRepoI := member.InitMemberQueryRepo(readDb, writeDb)
 	userGrpcClient := user_grpc.NewGrpcClient(appCfg)
-	managerTxn := transaction.InitManagerTxn(writeDb)
+	managerTxn := provideTransactionManager(writeDb)
 	chatEventPublisherI := kafka.InitChatEventPublisher(appCfg)
 	conversationServiceI := provideConversationUsecase(conversationQueryRepoI, conversationCommandRepoI, memberCmdRepoI, memberQueryRepoI, userGrpcClient, managerTxn, chatEventPublisherI)
 	conversationHandler := v1.InitConversationHandler(conversationServiceI)
@@ -86,10 +86,15 @@ var serviceSet = wire.NewSet(
 
 var repoSet = wire.NewSet(conversation.InitConversationCommandRepo, conversation.InitConversationQueryRepo, member.InitMemberCommandRepo, member.InitMemberQueryRepo, message.InitMessageCmdRepo, message.InitMessageQueryRepo, redis2.InitJWKCacheRepo, redis2.InitRedisDenylist, redis2.InitMessageRateLimiter, redis2.InitMessageListCache, redis2.InitUserProfileCache, redis2.InitWsPublisher, redis2.InitWsSubscriber, kafka.InitAssistantEventPublisher, kafka.InitChatEventPublisher)
 
-var providerSet = wire.NewSet(user_grpc.NewGrpcClient, transaction.InitManagerTxn, ws.NewHub, worker.InitUserEventConsumer, worker.InitChatEventConsumer, worker.InitAssistantResponseConsumer, provideLogger)
+var providerSet = wire.NewSet(user_grpc.NewGrpcClient, provideTransactionManager, ws.NewHub, worker.InitUserEventConsumer, worker.InitChatEventConsumer, worker.InitAssistantResponseConsumer, provideLogger)
 
 func provideLogger(cfg *config.AppConfig) logger.Logger {
 	return logger.NewZapLogger(cfg.Logger.LogLevel)
+}
+
+func provideTransactionManager(writeDb *database.GormWriteDb) *transaction.ManagerTxn {
+	transactionDb := transaction.GormWriteDb(*writeDb)
+	return transaction.InitManagerTxn(&transactionDb)
 }
 
 func provideMessageUsecase(
