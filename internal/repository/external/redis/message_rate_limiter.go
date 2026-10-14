@@ -9,6 +9,7 @@ import (
 	"github.com/vucongthanh92/courier-chat-svc/config"
 	"github.com/vucongthanh92/courier-chat-svc/internal/domain/interfaces"
 	redisclient "github.com/vucongthanh92/courier-chat-svc/redis"
+	"github.com/vucongthanh92/go-base-utils/models"
 )
 
 var messageRateLimitScript = goredis.NewScript(`
@@ -45,7 +46,7 @@ return {1, 0, remaining}
 
 type messageRateLimiter struct {
 	client redisclient.Client
-	cfg    config.MessageRateLimitConfig
+	cfg    models.MessageRateLimitConfig
 }
 
 func InitMessageRateLimiter(client redisclient.Client, appCfg *config.AppConfig) interfaces.MessageRateLimiterI {
@@ -94,16 +95,16 @@ func (r *messageRateLimiter) Allow(ctx context.Context, userID, conversationID u
 	return result, nil
 }
 
-func defaultMessageRateLimitConfig() config.MessageRateLimitConfig {
-	return config.MessageRateLimitConfig{
+func defaultMessageRateLimitConfig() models.MessageRateLimitConfig {
+	return models.MessageRateLimitConfig{
 		Enabled:      true,
-		Burst:        config.RateLimitWindowConfig{Limit: 5, WindowSeconds: 2},
-		Conversation: config.RateLimitWindowConfig{Limit: 30, WindowSeconds: 60},
-		User:         config.RateLimitWindowConfig{Limit: 100, WindowSeconds: 60},
+		Burst:        models.RateLimitWindowConfig{Limit: 5, WindowSeconds: 2},
+		Conversation: models.RateLimitWindowConfig{Limit: 30, WindowSeconds: 60},
+		User:         models.RateLimitWindowConfig{Limit: 100, WindowSeconds: 60},
 	}
 }
 
-func applyMessageRateLimitDefaults(cfg *config.MessageRateLimitConfig) {
+func applyMessageRateLimitDefaults(cfg *models.MessageRateLimitConfig) {
 	defaults := defaultMessageRateLimitConfig()
 	if cfg.Burst.Limit <= 0 {
 		cfg.Burst.Limit = defaults.Burst.Limit
