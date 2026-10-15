@@ -2,7 +2,9 @@ package healthcheck
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/vucongthanh92/courier-chat-svc/config"
 	"github.com/vucongthanh92/courier-chat-svc/database"
@@ -11,14 +13,25 @@ import (
 )
 
 func RunHealthCheck(
-	_ context.Context,
+	ctx context.Context,
 	cfg *config.AppConfig,
-	_ database.GormReadDb,
-	_ database.GormWriteDb,
+	readDb database.GormReadDb,
+	writeDb database.GormWriteDb,
 ) func() {
 	return func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("/live", func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("ok"))
+		})
+		mux.HandleFunc("/ready", func(w http.ResponseWriter, _ *http.Request) {
+			readyCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+			defer cancel()
+			if err := pingDatabases(readyCtx, readDb, writeDb); err != nil {
+				logger.Warn("healthcheck readiness failed", zap.Error(err))
+				http.Error(w, "not ready", http.StatusServiceUnavailable)
+				return
+			}
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte("ok"))
 		})
@@ -27,4 +40,23 @@ func RunHealthCheck(
 			logger.Warn("Healthcheck server", zap.Error(err))
 		}
 	}
+}
+
+func pingDatabases(ctx context.Context, readDb database.GormReadDb, writeDb database.GormWriteDb) error {
+	for name, db := range map[string]database.GormReadDb{
+		"read":  readDb,
+		"write": database.GormReadDb(writeDb),
+	} {
+		if db == nil {
+			return fmt.Errorf("%s database is not initialized", name)
+		}
+		sqlDb, err := (*db).DB()
+		if err != nil {
+			return fmt.Errorf("get %s database: %w", name, err)
+		}
+		if err := sqlDb.PingContext(ctx); err != nil {
+			return fmt.Errorf("ping %s database: %w", name, err)
+		}
+	}
+	return nil
 }

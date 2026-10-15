@@ -25,7 +25,7 @@ type AssistantEventPublisher struct {
 }
 
 func InitAssistantEventPublisher(cfg *config.AppConfig) interfaces.AssistantEventPublisherI {
-	brokers := []string{"localhost:9092"}
+	brokers := []string{"kafka:9092"}
 	topic := defaultAssistantRequestedTopic
 	source := "chat-service"
 	if cfg != nil {

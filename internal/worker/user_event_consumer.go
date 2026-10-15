@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultBroker = "localhost:9092"
+	defaultBroker = "kafka:9092"
 	defaultGroup  = "chat-service"
 	defaultTopic  = "courier.user.events.v1"
 )

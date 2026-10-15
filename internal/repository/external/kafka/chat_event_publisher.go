@@ -24,7 +24,7 @@ type ChatEventPublisher struct {
 }
 
 func InitChatEventPublisher(cfg *config.AppConfig) interfaces.ChatEventPublisherI {
-	brokers := []string{"localhost:9092"}
+	brokers := []string{"kafka:9092"}
 	topic := defaultChatEventsTopic
 	source := "chat-service"
 	if cfg != nil {

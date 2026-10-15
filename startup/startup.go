@@ -11,6 +11,7 @@ import (
 	"github.com/gammazero/workerpool"
 	"github.com/vucongthanh92/courier-chat-svc/config"
 	"github.com/vucongthanh92/courier-chat-svc/database"
+	healthcheck "github.com/vucongthanh92/courier-chat-svc/helper/healthcheck"
 	"github.com/vucongthanh92/courier-chat-svc/internal"
 	"github.com/vucongthanh92/courier-chat-svc/internal/api"
 	"github.com/vucongthanh92/courier-chat-svc/redis"
@@ -41,8 +42,8 @@ func start() {
 		CustomEpoch: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 	})
 
-	container, _, _ := registerDependencies(ctx)
-	runServer(ctx, container)
+	container, readDb, writeDb := registerDependencies(ctx)
+	runServer(ctx, container, readDb, writeDb)
 }
 
 func registerDependencies(_ context.Context) (*api.ApiContainer, database.GormReadDb, database.GormWriteDb) {
@@ -57,12 +58,18 @@ func registerDependencies(_ context.Context) (*api.ApiContainer, database.GormRe
 	), readDb, writeDb
 }
 
-func runServer(ctx context.Context, container *api.ApiContainer) {
+func runServer(
+	ctx context.Context,
+	container *api.ApiContainer,
+	readDb database.GormReadDb,
+	writeDb database.GormWriteDb,
+) {
 	wp := workerpool.New(5)
 
 	wp.Submit(container.GrpcServer.Run)
 	wp.Submit(container.HttpServer.Run)
 	wp.Submit(container.CronServer.Run)
+	wp.Submit(healthcheck.RunHealthCheck(ctx, cfg, readDb, writeDb))
 	wp.Submit(func() {
 		if err := container.UserEventConsumer.Start(ctx); err != nil && !errors.Is(err, context.Canceled) {
 			logger.Error("user event consumer stopped", zap.Error(err))
