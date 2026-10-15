@@ -24,7 +24,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/swaggo/swag v1.8.12
-	github.com/vucongthanh92/courier/shared v0.0.0
+	github.com/vucongthanh92/courier/shared v0.0.0-20261011113145-43c7030c3c51
 	go.opentelemetry.io/otel/trace v1.43.0
 	google.golang.org/grpc v1.82.0
 )
@@ -184,5 +184,3 @@ require (
 	gorm.io/driver/sqlite v1.5.7 // indirect
 	gorm.io/driver/sqlserver v1.6.0 // indirect
 )
-
-replace github.com/vucongthanh92/courier/shared => ../courier-common/shared
