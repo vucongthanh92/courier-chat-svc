@@ -3,6 +3,7 @@ package startup
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -33,6 +34,10 @@ func Execute() {
 }
 
 func start() {
+	if err := config.ApplyPublicOrigins(cfg); err != nil {
+		panic(fmt.Errorf("apply public origins: %w", err))
+	}
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
