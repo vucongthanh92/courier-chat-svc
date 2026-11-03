@@ -25,6 +25,8 @@ import (
 
 var cfg *config.AppConfig
 
+const longRunningWorkerPoolSize = 7
+
 func Execute() {
 	cfg = &config.AppConfig{}
 
@@ -69,7 +71,7 @@ func runServer(
 	readDb database.GormReadDb,
 	writeDb database.GormWriteDb,
 ) {
-	wp := workerpool.New(5)
+	wp := workerpool.New(longRunningWorkerPoolSize)
 
 	wp.Submit(container.GrpcServer.Run)
 	wp.Submit(container.HttpServer.Run)
