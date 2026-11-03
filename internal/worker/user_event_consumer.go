@@ -16,7 +16,7 @@ import (
 const (
 	defaultBroker = "kafka:9092"
 	defaultGroup  = "chat-service"
-	defaultTopic  = "courier.user.events.v1"
+	defaultTopic  = "courier.user.email-verified.v1"
 )
 
 type UserEventConsumer struct {

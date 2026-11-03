@@ -48,7 +48,7 @@ kafka:
   brokers: ["localhost:9092"]
   groupID: chat-service
   topics:
-    userEvents: courier.user.events.v1
+    userEvents: courier.user.email-verified.v1
     chatEvents: courier.chat.events.v1
     assistantRequested: courier.assistant.requested.v1
     assistantResponded: courier.assistant.responded.v1
