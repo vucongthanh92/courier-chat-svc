@@ -15,6 +15,7 @@ import (
 	healthcheck "github.com/vucongthanh92/courier-chat-svc/helper/healthcheck"
 	"github.com/vucongthanh92/courier-chat-svc/internal"
 	"github.com/vucongthanh92/courier-chat-svc/internal/api"
+	"github.com/vucongthanh92/courier-chat-svc/internal/profiling"
 	"github.com/vucongthanh92/courier-chat-svc/redis"
 	"github.com/vucongthanh92/go-base-utils/command"
 	baseUtils "github.com/vucongthanh92/go-base-utils/helper/utils"
@@ -44,6 +45,17 @@ func start() {
 	defer cancel()
 
 	tracing.UseOpenTelemetry(tracing.Config(*cfg.Tracing))
+	stopProfiler, profilerEnabled, err := profiling.Start(cfg.ServiceName)
+	if err != nil {
+		logger.Warn("continuous profiling is unavailable", zap.Error(err))
+	} else if profilerEnabled {
+		defer func() {
+			if err := stopProfiler(); err != nil {
+				logger.Warn("stop continuous profiling", zap.Error(err))
+			}
+		}()
+	}
+
 	baseUtils.InitSnowflake(baseUtils.SnowflakeConfig{
 		MachineID:   1,
 		CustomEpoch: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
